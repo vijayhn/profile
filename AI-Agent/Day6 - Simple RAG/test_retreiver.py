@@ -1,0 +1,13 @@
+from retriever import load_documents, retriever
+
+# result=load_documents()
+
+# for file_name,detail in result.items():
+#     print('-'*80)
+#     print(file_name)
+#     print(detail)
+
+filename,content = retriever("vegetables")
+print(filename)
+print(content)
+
