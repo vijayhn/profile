@@ -7,7 +7,7 @@ from retriever import load_documents, retriever
 #     print(file_name)
 #     print(detail)
 
-filename,content = retriever("vegetables")
+filename,content = retriever(input("\nProvide the search term: "))
 print(filename)
 print(content)
 
