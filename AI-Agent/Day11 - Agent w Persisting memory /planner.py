@@ -107,6 +107,8 @@ TOOL: <tool_name>
 
 11. IF the request can be answered directly using conversational memory, standard knowledge, or if tasks list is empty/NONE, respond ONLY with: FINISH
 
+12. Remember the current_time returns the date as YYYY-MM-DD, so do not mix month and dates 
+
 Next Decision:
 """
 

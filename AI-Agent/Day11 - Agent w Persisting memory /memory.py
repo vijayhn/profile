@@ -139,3 +139,28 @@ def search_semantic_memories(
 
     return results[:top_k]
 
+def save_semantic_memory(fact):
+    connection = sqlite3.connect(DATABASE)
+    cursor = connection.cursor()
+
+    embedding = create_embedding(fact)
+
+    cursor.execute(
+        """
+        INSERT INTO memories
+        (
+            user_message,
+            assistant_message,
+            embedding
+        )
+        VALUES (?, ?, ?)
+        """,
+        (
+            fact,
+            "",
+            json.dumps(embedding)
+        )
+    )
+
+    connection.commit()
+    connection.close()

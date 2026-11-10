@@ -5,6 +5,7 @@
 .pyc
 # C extensions
 *.so
+memory.db
 
 # Distribution / packaging
 .Python
