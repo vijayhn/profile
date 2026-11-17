@@ -34,8 +34,8 @@ async def create_tool_registry(
                 "client": client,
                 "tool": tool
             }
-            print("Client name:",client.name)
-            print("Tool name:",tool.name)
+            # print("Client name:",client.name)
+            # print("Tool name:",tool.name)
     return clients, tool_registry
 
 
