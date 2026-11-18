@@ -7,4 +7,5 @@ class AgentState(TypedDict):
     observations: list
     action: str
     finished: bool
+    approval: str
     final_answer: str

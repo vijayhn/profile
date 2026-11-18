@@ -1,25 +1,20 @@
-from typing import TypedDict
-
 from langgraph.graph import (
     StateGraph,
     START,
     END
 )
 
+from langgraph.types import interrupt
+
+from langgraph.checkpoint.memory import (
+    InMemorySaver
+)
+
 from agent.planner import planner
 from agent.executor import execute_action
 from agent.runner import format_answer
 
-
-class AgentState(TypedDict):
-    user_request: str
-    current_step: int
-    max_steps: int
-    actions: list
-    observations: list
-    action: str
-    finished: bool
-    final_answer: str
+from agent.state import AgentState
 
 
 def create_planner_node(tools):
@@ -42,6 +37,22 @@ def create_planner_node(tools):
         }
 
     return planner_node
+
+
+def approval_node(
+    state: AgentState
+):
+
+    decision = interrupt(
+        {
+            "message": "Approve this tool call?",
+            "action": state["action"]
+        }
+    )
+
+    return {
+        "approval": decision
+    }
 
 
 def create_tool_node(client):
@@ -72,10 +83,12 @@ def create_tool_node(client):
                     }
                 ]
             ),
+
             "actions": (
                 state["actions"]
                 + [action]
             ),
+
             "current_step": (
                 state["current_step"] + 1
             )
@@ -108,7 +121,17 @@ def route_after_planner(
     if state["action"] == "FINISH":
         return "finish"
 
-    return "tool"
+    return "approval"
+
+
+def route_after_approval(
+    state: AgentState
+):
+
+    if state["approval"] == "yes":
+        return "approved"
+
+    return "rejected"
 
 
 def route_after_tool(
@@ -139,6 +162,11 @@ def build_graph(
     )
 
     builder.add_node(
+        "approval",
+        approval_node
+    )
+
+    builder.add_node(
         "tool",
         create_tool_node(client)
     )
@@ -157,8 +185,17 @@ def build_graph(
         "planner",
         route_after_planner,
         {
-            "tool": "tool",
+            "approval": "approval",
             "finish": "answer"
+        }
+    )
+
+    builder.add_conditional_edges(
+        "approval",
+        route_after_approval,
+        {
+            "approved": "tool",
+            "rejected": "answer"
         }
     )
 
@@ -176,4 +213,8 @@ def build_graph(
         END
     )
 
-    return builder.compile()
+    checkpointer = InMemorySaver()
+
+    return builder.compile(
+        checkpointer=checkpointer
+    )
